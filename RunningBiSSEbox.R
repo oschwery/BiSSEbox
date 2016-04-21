@@ -3,7 +3,7 @@
 
 source("/Users/orlandoschwery/Documents/UT/Courses&Workshops/Spring16/Phylometh/BiSSEbox/BiSSEbox.R")
 
-tree <-
+tree <- read.tree("/Users/orlandoschwery/Documents/UT/Courses&Workshops/Spring16/Phylometh/BiSSEbox/Ericaceae_MCC_SLA.tre")
 
 data <-
 

@@ -57,14 +57,14 @@ BiSSEbox <- function(tree, data) {
     anova(fit, equal.l=fit.l, equal.m=fit.m, equal.q=fit.q, equal.lm=fit.lm, equal.lq=fit.lq, equal.mq=fit.mq, equal.lmq=fit.lmq )
 
 # add AIC's hethere...
-    AIC.uncon <-
+    AIC.uncon <- (-2*(ln(likelihood))+(2*6))
     AIC.l <-
     AIC.m <-
     AIC.q <-
     AIC.lm <-
     AIC.lq <-
     AIC.mq <-
-    AIC.lmq <- 
+    AIC.lmq <-
 
 
     selected.model.lik <- ...
