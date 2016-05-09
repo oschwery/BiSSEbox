@@ -1,9 +1,9 @@
+# load packages
+library(ape)
+library(geiger)
+library(diversitree)
 #Code to run BiSSEbox
 BiSSEbox <- function(tree, data) {
-  ##load packages
-  library(ape)
-  library(geiger)
-  library(diversitree)
   # generate output objects
   traitMLfits <- list()
   MCMCs <- list()
@@ -72,7 +72,7 @@ coef(fit)
     AIC.lmq <-
 
     suffix <- c("l", "m", "ml")
-    fir (i in sequence(lenght))
+    for (i in sequence(lenght))
 
     selected.model.lik <- ...
     selected.model.fit <- ...
