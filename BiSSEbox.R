@@ -8,10 +8,14 @@ BiSSEbox <- function(tree, data, Nsteps=5000) {  # MCMCgens, samp.freq, taxofile
   traitMLfits <- list()
   MCMCs <- list()
   AICs <- list()
+  logLiks <- list()
+  coefs <- list()
+
   traits <- colnames(data)
 
   for (i in length(traits) {
     ##chose desired setup (no missing sampling, richness  file, sampling frequency)
+    print(paste("Current trait:", traits[i], sep=" "))
     current.trait <- data[, i]
     names(current.trait) <- row.names(data)
     lik <- make.bisse(tree, current.trait)
@@ -47,6 +51,7 @@ BiSSEbox <- function(tree, data, Nsteps=5000) {  # MCMCgens, samp.freq, taxofile
     fit.lmq<- find.mle(lik.lmq, p[argnames(lik.lmq)])
     #save the fits
     traitMLfits[[i]] <- list(unconstrained=fit, equal.lambda=fit.l, equal.mu=fit.m, equal.q=fit.q, equal.lambda.mu=fit.lm, equal.lambda.q=fit.lq, equal.mu.q=fit.mq, all.equal=fit.lmq)
+    names(traitMLfits)[[i]] <- paste(traits[i])
     #round(rbind(full=coef(fit), equal.l=coef(fit.l, TRUE)), 3)
     #round(rbind(full=coef(fit), equal.m=coef(fit.m, TRUE)), 3)
     #round(rbind(full=coef(fit), equal.q=coef(fit.q, TRUE)), 3)
@@ -79,6 +84,12 @@ BiSSEbox <- function(tree, data, Nsteps=5000) {  # MCMCgens, samp.freq, taxofile
     }
     names(currentcoefs) <- Modelnames
 
+    AICs[[i]] <- currentAICs
+    logLiks[[i]] <- currentlogLiks
+    coefs[[i]] <- currentcoefs
+    names(AICs)[[i]] <- paste(traits[i])
+    names(logLiks)[[i]] <- paste(traits[i])
+    names(coefs)[[i]] <- paste(traits[i])
 #    suffix <- c("l", "m", "ml")
 #    for (i in sequence(lenght))
 
@@ -105,13 +116,13 @@ BiSSEbox <- function(tree, data, Nsteps=5000) {  # MCMCgens, samp.freq, taxofile
 #    traitMLfits <- c(traitMLfits, MLfits)
 
     MCMCs[[i]] <- mcmc.bisse2
-    name(MCMCs[[i]]) <- selected.model.name
+    names(MCMCs)[[i]] <- paste(traits[i], selected.model.name, sep="_")
 
 #    clear all the objects?
 #    MLfits <- list()
   }
 
-  return(list(fits=traitMLfits, AICs=AICs, ChosenModels=ChosenModels, MCMCs=MCMCs))
+  return(list(fits=traitMLfits, AICs=AICs, MCMCs=MCMCs))
 
   Save output to allow seeing all and plotting all and having a summary of the results
 }
