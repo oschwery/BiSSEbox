@@ -111,7 +111,7 @@ BiSSEbox <- function(tree, data, Nsteps=5000) {  # MCMCgens, samp.freq, taxofile
     #sapply(mcmc.bisse2[,2:6],quantile,c(0.025,0.975))
 
 
-    save outputs (all the fit, round table of fits (no, let auxiliary function do that), aic, chosen model  [as name of -> ], mcmc.bisse2)
+#    save outputs (all the fit, round table of fits (no, let auxiliary function do that), aic, chosen model  [as name of -> ], mcmc.bisse2)
 
 #    traitMLfits <- c(traitMLfits, MLfits)
 
