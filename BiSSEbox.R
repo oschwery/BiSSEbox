@@ -13,7 +13,7 @@ BiSSEbox <- function(tree, data, Nsteps=5000) {  # MCMCgens, samp.freq, taxofile
 
   traits <- colnames(data)
 
-  for (i in length(traits) {
+  for (i in 1:length(traits)) {
     ##chose desired setup (no missing sampling, richness  file, sampling frequency)
     print(paste("Current trait:", traits[i], sep=" "))
     current.trait <- data[, i]
@@ -28,7 +28,7 @@ BiSSEbox <- function(tree, data, Nsteps=5000) {  # MCMCgens, samp.freq, taxofile
     ##unconstrained run
     p <- starting.point.bisse(tree)
     fit <- find.mle(lik, p)
-    #fit$lnLik
+    #fit$logLik
     #round(coef(fit), 3)
 
     ##constrained run ALL MODELS
@@ -63,24 +63,24 @@ BiSSEbox <- function(tree, data, Nsteps=5000) {  # MCMCgens, samp.freq, taxofile
     ##ANOVA to test if constrained and unconstrained model perform different
     #anova(fit, equal.l=fit.l, equal.m=fit.m, equal.q=fit.q, equal.lm=fit.lm, equal.lq=fit.lq, equal.mq=fit.mq, equal.lmq=fit.lmq )
     AllLiks <- c(lik, lik.l, lik.m, lik.q, lik.lm, lik.lq, lik.mq, lik.lmq)
-    AllFits <- c(fit, fit.l, fit.m, fit.q, fit.lm, fit.lq, fit.mq, fit.lmq)
-    Modelnames <- c("unconstrained", "equal.lambda", "equal.mu", "equal.q", "equal.lambda.mu", "equal.lambda.q", "equal.mu.q, all.equal")
+    AllFits <- list(fit, fit.l, fit.m, fit.q, fit.lm, fit.lq, fit.mq, fit.lmq)
+    Modelnames <- c("unconstrained", "equal.lambda", "equal.mu", "equal.q", "equal.lambda.mu", "equal.lambda.q", "equal.mu.q", "all.equal")
     # add AIC's hethere...
     currentAICs <- c()
     for (j in 1:length(Modelnames)) {
-      currentAICs <- c(currentAICs, AIC(AllFits[j]))
+      currentAICs <- c(currentAICs, AIC(AllFits[[j]]))
     }
     names(currentAICs) <- Modelnames
 
     currentlogLiks <- c()
     for (j in 1:length(Modelnames)) {
-      currentlogLiks <- c(currentlogLiks, logLik(AllFits[j]))
+      currentlogLiks <- c(currentlogLiks, logLik(AllFits[[j]]))
     }
     names(currentlogLiks) <- Modelnames
 
     currentcoefs <- list()
     for (j in 1:length(Modelnames)) {
-      currentcoefs[[j] <- coef(AllFits[j]))
+      currentcoefs[[j]] <- coef(AllFits[[j]])
     }
     names(currentcoefs) <- Modelnames
 
@@ -93,17 +93,24 @@ BiSSEbox <- function(tree, data, Nsteps=5000) {  # MCMCgens, samp.freq, taxofile
 #    suffix <- c("l", "m", "ml")
 #    for (i in sequence(lenght))
 
-    selected.model.lik <- AllLiks[which(currentAICs == min(currentAICs))]
-    selected.model.fit <- AllFits[which(currentAICs == min(currentAICs))]
+    #selected.model.lik <- AllLiks[max(which(currentAICs == min(currentAICs)))]
+    #selected.model.fit <- AllFits[[max(which(currentAICs == min(currentAICs)))]]
+    #selected.model.name <- Modelnames[max(which(currentAICs == min(currentAICs)))]
+
+    selected.model.lik <- AllLiks[[which(currentAICs == min(currentAICs))]]
+    selected.model.fit <- AllFits[[which(currentAICs == min(currentAICs))]]
     selected.model.name <- Modelnames[which(currentAICs == min(currentAICs))]
+
     print(selected.model.name)
     # run MCMC of that one
     prior <- make.prior.exponential(2*(log(length(tree$tip.label))/(max(branching.times(tree)))))
 
+    print("Start MCMC calibration")
     mcmc.bisse<-mcmc(selected.model.lik,selected.model.fit$par,nsteps=100,prior=prior,w=0.1)
     mcmc.bisse
     w=diff(sapply(mcmc.bisse[2:5],quantile,c(0.05,0.95)))
 
+    print("Start MCMC")
     #For real...
     mcmc.bisse2<-mcmc(selected.model.lik,selected.model.fit$par,nsteps=Nsteps,w=w,prior=prior)
 
@@ -124,5 +131,5 @@ BiSSEbox <- function(tree, data, Nsteps=5000) {  # MCMCgens, samp.freq, taxofile
 
   return(list(fits=traitMLfits, AICs=AICs, MCMCs=MCMCs))
 
-  Save output to allow seeing all and plotting all and having a summary of the results
+  #Save output to allow seeing all and plotting all and having a summary of the results
 }

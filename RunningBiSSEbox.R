@@ -3,13 +3,13 @@
 
 source("/Users/orlandoschwery/Documents/UT/Courses&Workshops/Spring16/Phylometh/BiSSEbox/BiSSEbox.R")
 
-tree <- read.tree("/Users/orlandoschwery/Documents/UT/Courses&Workshops/Spring16/Phylometh/BiSSEbox/Ericaceae_MCC_SLA.tre")
+tree <- read.tree("/Users/orlandoschwery/Documents/UT/Courses&Workshops/Spring16/Phylometh/BiSSEbox/BiSSEbox_testtree.tre")
 
-data <-
+data <- read.csv("/Users/orlandoschwery/Documents/UT/Courses&Workshops/Spring16/Phylometh/BiSSEbox/BiSSEbox_testdata.csv", row.names=1, header=TRUE)
 
-parameters <-
+#parameters <-
 
-ALLtheBiSSE <- BiSSEbox(tree, data)
+ALLtheBiSSE <- BiSSEbox(tree, data, 200)
 
 
 get the summary
