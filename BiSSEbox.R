@@ -108,7 +108,7 @@ BiSSEbox <- function(tree, data, Nsteps=5000) {  # MCMCgens, samp.freq, taxofile
     print("Start MCMC calibration")
     mcmc.bisse<-mcmc(selected.model.lik,selected.model.fit$par,nsteps=100,prior=prior,w=0.1)
     mcmc.bisse
-    w=diff(sapply(mcmc.bisse[2:5],quantile,c(0.05,0.95)))
+    w=diff(sapply(mcmc.bisse[2:(ncol(mcmc.bisse)-1)],quantile,c(0.05,0.95)))
 
     print("Start MCMC")
     #For real...
