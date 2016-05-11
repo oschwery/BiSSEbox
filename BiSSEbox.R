@@ -3,14 +3,14 @@ library(ape)
 library(geiger)
 library(diversitree)
 #Code to run BiSSEbox
-BiSSEbox <- function(tree, data, Nsteps=5000) {  # MCMCgens, samp.freq, taxofile
+BiSSEbox <- function(tree, data, Nsteps=5000) {  # later: samp.freq, taxofile
   # generate output objects
   traitMLfits <- list()
   MCMCs <- list()
   AICs <- list()
   logLiks <- list()
   coefs <- list()
-
+  # vector of trait names
   traits <- colnames(data)
 
   for (i in 1:length(traits)) {
@@ -18,6 +18,7 @@ BiSSEbox <- function(tree, data, Nsteps=5000) {  # MCMCgens, samp.freq, taxofile
     print(paste("Current trait:", traits[i], sep=" "))
     current.trait <- data[, i]
     names(current.trait) <- row.names(data)
+    print("Running ML fits.")
     lik <- make.bisse(tree, current.trait)
     #lik <- make.bisse(tree, SLA.v, unresolved=richnessSLA)
     #sampling.f_SLA<-c(0.051095,0.046405)
@@ -30,10 +31,8 @@ BiSSEbox <- function(tree, data, Nsteps=5000) {  # MCMCgens, samp.freq, taxofile
     fit <- find.mle(lik, p)
     #fit$logLik
     #round(coef(fit), 3)
-
     ##constrained run ALL MODELS
-    #Contrain lambda, and/or mu and/or q
-
+    #Constrain lambda, and/or mu and/or q
     lik.l <- constrain(lik, lambda0 ~ lambda1)
     lik.m<- constrain(lik, mu0 ~ mu1)
     lik.q <- constrain(lik, q01 ~ q10)
@@ -41,7 +40,7 @@ BiSSEbox <- function(tree, data, Nsteps=5000) {  # MCMCgens, samp.freq, taxofile
     lik.lq<- constrain(lik, q01 ~ q10, lambda0 ~ lambda1)
     lik.mq<- constrain(lik, q01 ~ q10,  mu0 ~ mu1)
     lik.lmq<- constrain(lik, mu0 ~ mu1, lambda0 ~ lambda1, q01 ~ q10)
-
+    # run fits for liks
     fit.l <- find.mle(lik.l, p[argnames(lik.l)])
     fit.m<- find.mle(lik.m, p[argnames(lik.m)])
     fit.q <- find.mle(lik.q, p[argnames(lik.q)])
@@ -71,19 +70,19 @@ BiSSEbox <- function(tree, data, Nsteps=5000) {  # MCMCgens, samp.freq, taxofile
       currentAICs <- c(currentAICs, AIC(AllFits[[j]]))
     }
     names(currentAICs) <- Modelnames
-
+    # Likelihoods
     currentlogLiks <- c()
     for (j in 1:length(Modelnames)) {
       currentlogLiks <- c(currentlogLiks, logLik(AllFits[[j]]))
     }
     names(currentlogLiks) <- Modelnames
-
+    # estimated rates
     currentcoefs <- list()
     for (j in 1:length(Modelnames)) {
       currentcoefs[[j]] <- coef(AllFits[[j]])
     }
     names(currentcoefs) <- Modelnames
-
+    # add all of these to list and name by current trait
     AICs[[i]] <- currentAICs
     logLiks[[i]] <- currentlogLiks
     coefs[[i]] <- currentcoefs
@@ -96,40 +95,28 @@ BiSSEbox <- function(tree, data, Nsteps=5000) {  # MCMCgens, samp.freq, taxofile
     #selected.model.lik <- AllLiks[max(which(currentAICs == min(currentAICs)))]
     #selected.model.fit <- AllFits[[max(which(currentAICs == min(currentAICs)))]]
     #selected.model.name <- Modelnames[max(which(currentAICs == min(currentAICs)))]
-
+    # find model with smalles AIC and get corresponding likelihood function, fit and name
     selected.model.lik <- AllLiks[[which(currentAICs == min(currentAICs))]]
     selected.model.fit <- AllFits[[which(currentAICs == min(currentAICs))]]
     selected.model.name <- Modelnames[which(currentAICs == min(currentAICs))]
-
+    # display name of chosen model
     print(selected.model.name)
-    # run MCMC of that one
+    # run MCMC
+    # make prior
     prior <- make.prior.exponential(2*(log(length(tree$tip.label))/(max(branching.times(tree)))))
-
+    # run MCMC short to determine w
     print("Start MCMC calibration")
     mcmc.bisse<-mcmc(selected.model.lik,selected.model.fit$par,nsteps=100,prior=prior,w=0.1)
     mcmc.bisse
     w=diff(sapply(mcmc.bisse[2:(ncol(mcmc.bisse)-1)],quantile,c(0.05,0.95)))
-
+    # run actual MCMC
     print("Start MCMC")
     #For real...
     mcmc.bisse2<-mcmc(selected.model.lik,selected.model.fit$par,nsteps=Nsteps,w=w,prior=prior)
-
-    #Now we can examine the 95% credible intervals of the posterior samples for each parameter.  If the intervals do not overlap, then we have posterior Bayesian support for a difference in rates.
-    #sapply(mcmc.bisse2[,2:6],quantile,c(0.025,0.975))
-
-
-#    save outputs (all the fit, round table of fits (no, let auxiliary function do that), aic, chosen model  [as name of -> ], mcmc.bisse2)
-
 #    traitMLfits <- c(traitMLfits, MLfits)
-
+    # save MCMC result and name by trait and model
     MCMCs[[i]] <- mcmc.bisse2
     names(MCMCs)[[i]] <- paste(traits[i], selected.model.name, sep="_")
-
-#    clear all the objects?
-#    MLfits <- list()
   }
-
   return(list(fits=traitMLfits, AICs=AICs, MCMCs=MCMCs))
-
-  #Save output to allow seeing all and plotting all and having a summary of the results
 }
